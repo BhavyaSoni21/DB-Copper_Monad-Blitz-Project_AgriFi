@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
+import loanArtifact from '../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
 import contracts from '../config/contracts';
 
 const MONAD_CHAIN_ID = 2016;

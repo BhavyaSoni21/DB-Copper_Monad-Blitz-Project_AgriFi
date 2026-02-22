@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
+import loanArtifact from '../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
 import contracts from '../config/contracts';
 
 export default function Farmer() {
