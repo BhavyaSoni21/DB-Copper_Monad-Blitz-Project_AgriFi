@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
 
 const MONAD_CHAIN_ID = 2016;
-const LOAN_CONTRACT_ADDRESS = "YOUR_DEPLOYED_CONTRACT_ADDRESS"; // Replace with actual address
+const LOAN_CONTRACT_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // Deployed on localhost
 
 export default function FarmerDashboard() {
   const [loans, setLoans] = useState([]);
@@ -19,12 +19,22 @@ export default function FarmerDashboard() {
       return;
     }
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
+    // Try to get accounts silently first
+    let accounts = await provider.send("eth_accounts", []);
+    if (!accounts || accounts.length === 0) {
+      // Only prompt if not already connected
+      accounts = await provider.send("eth_requestAccounts", []);
+    }
     const signer = provider.getSigner();
     const net = await provider.getNetwork();
     let networkName = net.name;
     if (net.chainId === MONAD_CHAIN_ID) networkName = "Monad Testnet";
     setNetwork(networkName);
+    if (LOAN_CONTRACT_ADDRESS === "YOUR_DEPLOYED_CONTRACT_ADDRESS") {
+      setStatus("Please set LOAN_CONTRACT_ADDRESS in farmer-dashboard.js");
+      setLoading(false);
+      return;
+    }
     const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
     const myAddress = await signer.getAddress();
     let arr = [];
@@ -43,23 +53,86 @@ export default function FarmerDashboard() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
-      <div className="bg-white p-8 rounded shadow w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-blue-700">Farmer Dashboard</h2>
-        <div className="mb-4 text-xs text-gray-500">Network: {network}</div>
-        {loading && <div className="mb-4 text-blue-600">Loading...</div>}
-        {loans.length === 0 && !loading && <div>No loans found.</div>}
-        {loans.map(loan => (
-          <div key={loan.id} className="border p-2 mb-2 rounded bg-blue-100">
-            <div className="font-semibold">Loan ID: {loan.id}</div>
-            <div>Amount: {ethers.utils.formatEther(loan.amount)} ETH</div>
-            <div>Crop: {loan.cropType}</div>
-            <div>Duration: {loan.durationInDays} days</div>
-            <div>Funded: {loan.funded ? "Yes" : "No"}</div>
-            <div>Repaid: {loan.repaid ? "Yes" : "No"}</div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-8">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-3xl">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-blue-700 mb-2">🚜 Farmer Dashboard</h2>
+          <div className="text-sm text-gray-600">
+            <div className="border rounded px-3 py-1 bg-gray-50 inline-block">
+              <span className="font-semibold">Network:</span> {network || 'Unknown'}
+            </div>
           </div>
-        ))}
-        {status && <div className="mt-4 text-blue-600">{status}</div>}
+        </div>
+        
+        {loading && <div className="mb-4 text-center text-blue-600 font-semibold py-8">⏳ Loading your loans...</div>}
+        
+        {!loading && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">My Loan Requests ({loans.length})</h3>
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold"
+                onClick={fetchMyLoans}
+              >
+                🔄 Refresh
+              </button>
+            </div>
+            
+            {loans.length === 0 && (
+              <div className="text-center text-gray-500 py-12 border rounded bg-gray-50">
+                No loans found. Request a loan to get started!
+              </div>
+            )}
+            
+            {loans.map(loan => (
+              <div key={loan.id} className="border rounded-lg p-4 mb-3 bg-white shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="font-bold text-lg text-gray-700">Loan #{loan.id.toString()}</div>
+                  <div className={`px-3 py-1 rounded font-semibold text-sm ${
+                    loan.repaid ? 'bg-green-100 text-green-700' : 
+                    loan.funded ? 'bg-blue-100 text-blue-700' : 
+                    loan.status === 1 ? 'bg-yellow-100 text-yellow-600' :
+                    loan.status === 2 ? 'bg-red-100 text-red-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>
+                    {loan.repaid ? '✓ Repaid' : 
+                     loan.funded ? '💰 Funded' : 
+                     loan.status === 1 ? '✅ Approved' :
+                     loan.status === 2 ? '❌ Rejected' :
+                     '📋 Pending'}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-blue-50 p-2 rounded">
+                    <div className="text-gray-600 text-xs">Amount</div>
+                    <div className="font-bold text-blue-700 text-lg">
+                      {ethers.utils.formatEther(loan.amount)} ETH
+                    </div>
+                  </div>
+                  <div className="bg-green-50 p-2 rounded">
+                    <div className="text-gray-600 text-xs">Duration</div>
+                    <div className="font-bold text-green-700 text-lg">
+                      {loan.durationInDays.toString()} days
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 p-2 rounded col-span-2">
+                    <div className="text-gray-600 text-xs">Crop Type</div>
+                    <div className="font-semibold text-blue-700">
+                      {loan.cropType}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {status && (
+          <div className={`mt-6 p-4 rounded-lg font-semibold ${status.includes('Error') ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}`}>
+            {status}
+          </div>
+        )}
       </div>
     </div>
   );

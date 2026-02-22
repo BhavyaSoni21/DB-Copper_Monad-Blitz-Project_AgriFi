@@ -26,8 +26,9 @@ export default function Farmer() {
     let networkName = net.name;
     if (net.chainId === MONAD_CHAIN_ID) networkName = "Monad Testnet";
     setNetwork(networkName);
-    // Replace with deployed contract address and ABI
-    const contract = new ethers.Contract("LOAN_CONTRACT_ADDRESS", loanArtifact.abi, signer);
+    // Deployed contract address
+    const LOAN_CONTRACT_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
+    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
     try {
       const tx = await contract.requestLoan(
         ethers.utils.parseEther(amount),
@@ -56,12 +57,36 @@ export default function Farmer() {
 
   if (showOnboarding) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
-        <div className="bg-white p-8 rounded shadow w-96">
-          <h2 className="text-2xl font-bold mb-4 text-blue-700">Welcome to AgriFi</h2>
-          <p className="mb-4 text-gray-700">AgriFi enables instant, on-chain micro-loans for farmers. Connect your wallet and follow the simple steps to request a loan.</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded w-full" onClick={() => setShowOnboarding(false)}>
-            Get Started
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl font-bold text-blue-700 mb-2">🌾 Welcome to AgriFi</h2>
+            <p className="text-sm text-gray-500">Blockchain-Powered Agricultural Finance</p>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              AgriFi enables instant, on-chain micro-loans for farmers. Connect your wallet and follow simple steps to request funding for your crops.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-2xl mb-1">🚜</div>
+              <div className="text-xs font-semibold text-green-700">For Farmers</div>
+            </div>
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-2xl mb-1">⚡</div>
+              <div className="text-xs font-semibold text-blue-700">Instant Loans</div>
+            </div>
+            <div className="text-center p-3 bg-purple-100 rounded-lg">
+              <div className="text-2xl mb-1">🔒</div>
+              <div className="text-xs font-semibold text-purple-700">Secure</div>
+            </div>
+          </div>
+          <button 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg w-full font-semibold transition" 
+            onClick={() => setShowOnboarding(false)}
+          >
+            Get Started →
           </button>
         </div>
       </div>
@@ -69,36 +94,73 @@ export default function Farmer() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
-      <div className="bg-white p-8 rounded shadow w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-blue-700">Request Crop Loan</h2>
-        <input
-          className="border p-2 w-full mb-2 rounded"
-          placeholder="Loan Amount (ETH)"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-        />
-        <input
-          className="border p-2 w-full mb-2 rounded"
-          placeholder="Crop Type"
-          value={cropType}
-          onChange={e => setCropType(e.target.value)}
-        />
-        <input
-          className="border p-2 w-full mb-2 rounded"
-          placeholder="Duration (days)"
-          value={duration}
-          onChange={e => setDuration(e.target.value)}
-        />
+    <div className="flex flex-col items-center justify-center min-h-screen py-8">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-blue-700 mb-2">🌾 Request Crop Loan</h2>
+          <p className="text-sm text-gray-600">Fill in the details below to request funding</p>
+          {network && (
+            <div className="mt-2 border rounded px-3 py-1 bg-gray-50 inline-block text-xs">
+              <span className="font-semibold">Network:</span> {network}
+            </div>
+          )}
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">💰 Loan Amount</label>
+          <input
+            className="border p-3 w-full rounded-lg"
+            placeholder="e.g., 2.5"
+            type="number"
+            step="0.01"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">Amount in ETH</div>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">🌾 Crop Type</label>
+          <input
+            className="border p-3 w-full rounded-lg"
+            placeholder="e.g., Wheat, Rice, Corn"
+            value={cropType}
+            onChange={e => setCropType(e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">Type of crop you're growing</div>
+        </div>
+        
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">📅 Duration</label>
+          <input
+            className="border p-3 w-full rounded-lg"
+            placeholder="e.g., 90"
+            type="number"
+            value={duration}
+            onChange={e => setDuration(e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">Loan duration in days</div>
+        </div>
+        
         <button
-          className={`bg-blue-600 text-white px-4 py-2 rounded w-full ${!validateInput() ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-600 text-white px-6 py-3 rounded-lg w-full font-semibold transition ${!validateInput() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
           onClick={requestLoan}
           disabled={!validateInput() || loading}
         >
-          {loading ? 'Processing...' : 'Request Loan'}
+          {loading ? '⏳ Processing...' : '📝 Submit Loan Request'}
         </button>
-        {status && <div className="mt-4 text-blue-600">{status}</div>}
-        <div className="mt-4 text-xs text-gray-500">Network: {network}</div>
+        
+        {status && (
+          <div className={`mt-4 p-3 rounded-lg font-semibold ${status.includes('requested') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+            {status}
+          </div>
+        )}
+        
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-xs text-blue-800">
+            <span className="font-semibold">💡 Tip:</span> Your loan will be reviewed by lenders who can approve and fund it directly.
+          </p>
+        </div>
       </div>
     </div>
   );

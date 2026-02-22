@@ -10,7 +10,10 @@ async function main() {
 
   // Deploy Loan contract
   const Loan = await hre.ethers.getContractFactory("AgriFiLoan");
-  const loan = await Loan.deploy(creditNFT.address);
+  // For testnet, use a mock price feed address or deployer address
+  // In production, use actual Chainlink price feed address
+  const mockPriceFeed = deployer.address; // Temporary mock for testing
+  const loan = await Loan.deploy(creditNFT.address, mockPriceFeed, deployer.address);
   await loan.deployed();
   console.log("AgriFiLoan deployed to:", loan.address);
 

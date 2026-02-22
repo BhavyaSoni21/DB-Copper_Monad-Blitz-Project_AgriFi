@@ -2,5 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/lender": "pages/lender.js",
+  "/lender-dashboard": "pages/lender-dashboard.js",
+  "/farmer-dashboard": "pages/farmer-dashboard.js",
   "/": "pages/index.js"
 }
