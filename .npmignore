@@ -1,0 +1,26 @@
+# Ignore Chainlink contracts and build artifacts
+node_modules/
+artifacts/
+build-info/
+cache/
+frontend/.next/
+
+# Ignore test output
+coverage/
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore screenshots
+screenshots/
+
+# Ignore logs
+*.log
+
+# Ignore Solidity debug files
+*.dbg.json
+
+# Ignore temporary files
+*.tmp
+*.swp
