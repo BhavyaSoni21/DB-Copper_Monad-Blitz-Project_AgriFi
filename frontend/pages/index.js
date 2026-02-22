@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
+import contracts from '../config/contracts';
 
 export default function Farmer() {
   const [amount, setAmount] = useState("");
@@ -26,9 +27,8 @@ export default function Farmer() {
     let networkName = net.name;
     if (net.chainId === MONAD_CHAIN_ID) networkName = "Monad Testnet";
     setNetwork(networkName);
-    // Deployed contract address
-    const LOAN_CONTRACT_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    // Use contract address from config
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     try {
       const tx = await contract.requestLoan(
         ethers.utils.parseEther(amount),

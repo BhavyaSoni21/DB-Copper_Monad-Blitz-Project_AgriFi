@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
-
-const LOAN_CONTRACT_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
+import contracts from '../config/contracts';
 
 export default function Lender() {
   const [pendingLoans, setPendingLoans] = useState([]);
@@ -23,7 +22,7 @@ export default function Lender() {
     setMyAddress(address);
     const net = await provider.getNetwork();
     setNetwork(net.name);
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     
     let pending = [];
     let approved = [];
@@ -56,7 +55,7 @@ export default function Lender() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     try {
       const tx = await contract.approveLoan(id);
       setStatus(`Approving loan #${id}...`);
@@ -74,7 +73,7 @@ export default function Lender() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     try {
       const tx = await contract.rejectLoan(id);
       setStatus(`Rejecting loan #${id}...`);
@@ -92,7 +91,7 @@ export default function Lender() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     try {
       const tx = await contract.fundLoan(id, { value: amount });
       setStatus(`Funding loan #${id}...`);

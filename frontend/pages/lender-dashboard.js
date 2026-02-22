@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import loanArtifact from '../../artifacts/contracts/AgriFiLoan.sol/AgriFiLoan.json';
+import contracts from '../config/contracts';
 
 const MONAD_CHAIN_ID = 2016;
-const LOAN_CONTRACT_ADDRESS = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // Deployed on localhost
 
 export default function LenderDashboard() {
   const [loans, setLoans] = useState([]);
@@ -30,12 +30,12 @@ export default function LenderDashboard() {
     let networkName = net.name;
     if (net.chainId === MONAD_CHAIN_ID) networkName = "Monad Testnet";
     setNetwork(networkName);
-    if (LOAN_CONTRACT_ADDRESS === "YOUR_DEPLOYED_CONTRACT_ADDRESS") {
-      setStatus("Please set LOAN_CONTRACT_ADDRESS in lender-dashboard.js");
+    if (!contracts.loanContract || contracts.loanContract === "YOUR_DEPLOYED_CONTRACT_ADDRESS") {
+      setStatus("Please set NEXT_PUBLIC_LOAN_CONTRACT_ADDRESS in environment variables");
       setLoading(false);
       return;
     }
-    const contract = new ethers.Contract(LOAN_CONTRACT_ADDRESS, loanArtifact.abi, signer);
+    const contract = new ethers.Contract(contracts.loanContract, loanArtifact.abi, signer);
     const myAddress = await signer.getAddress();
     let arr = [];
     for (let i = 0; i < 20; i++) {
