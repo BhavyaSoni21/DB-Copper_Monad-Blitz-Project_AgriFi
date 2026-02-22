@@ -2,6 +2,24 @@
 
 A blockchain-powered DeFi application enabling instant, transparent micro-loans for farmers with an integrated credit scoring system.
 
+## 🚀 Quick Start
+
+```bash
+# 1. Install dependencies
+npm install && cd frontend && npm install && cd ..
+
+# 2. Start local blockchain (Terminal 1)
+npx hardhat node
+
+# 3. Deploy contracts (Terminal 2)
+npx hardhat run scripts/deploy.js --network localhost
+
+# 4. Start frontend (Terminal 3)
+cd frontend && npm run dev
+```
+
+Then open `http://localhost:3000` and connect MetaMask to localhost (Chain ID: 31337).
+
 ## 🎯 Project Overview
 
 AgriFi revolutionizes agricultural financing by connecting farmers directly with lenders through smart contracts on the blockchain. The platform features a comprehensive loan approval workflow, credit score NFT system, and real-time tracking.
@@ -49,12 +67,27 @@ AgriFi revolutionizes agricultural financing by connecting farmers directly with
 
 ## 🛠️ Tech Stack
 
-- **Blockchain**: Ethereum-compatible (Hardhat local, Monad testnet ready)
-- **Smart Contracts**: Solidity 0.8.20
-- **Frontend**: Next.js 14.2.35, React, ethers.js 5.8.0
-- **Styling**: Custom CSS with modern design
-- **Dependencies**: OpenZeppelin, Chainlink (price feeds)
-- **Development**: Hardhat, dotenv
+**Blockchain & Smart Contracts:**
+- Solidity 0.8.20
+- Hardhat (development & testing)
+- OpenZeppelin (secure contract templates)
+- Chainlink (price feeds integration)
+
+**Frontend:**
+- Next.js 14.2.35
+- React
+- ethers.js 5.8.0
+- Custom CSS with modern responsive design
+
+**Infrastructure:**
+- Ethereum-compatible chains (Local Hardhat, Monad testnet ready)
+- Vercel (frontend deployment)
+- Environment-based configuration system
+
+**Development Tools:**
+- dotenv (environment management)
+- Git version control
+- MetaMask integration
 
 ## 📋 Prerequisites
 
@@ -105,12 +138,23 @@ npx hardhat run scripts/deploy.js --network monad
 
 Copy the deployed contract addresses.
 
-### 6. Update Frontend Contract Addresses
-Update the contract addresses in these files:
-- `frontend/pages/index.js`
-- `frontend/pages/farmer-dashboard.js`
-- `frontend/pages/lender.js`
-- `frontend/pages/lender-dashboard.js`
+### 6. Configure Frontend Contract Addresses
+
+#### Option A: Environment Variables (Recommended for Production)
+Create `.env.local` in the `frontend` directory:
+```env
+NEXT_PUBLIC_LOAN_CONTRACT_ADDRESS=<your_loan_contract_address>
+NEXT_PUBLIC_CREDIT_NFT_CONTRACT_ADDRESS=<your_credit_nft_contract_address>
+```
+
+#### Option B: Update Config File (Quick Development)
+Update `frontend/config/contracts.js` with your deployed contract addresses:
+```javascript
+const contracts = {
+  loanContract: "<your_loan_contract_address>",
+  creditNFTContract: "<your_credit_nft_contract_address>"
+};
+```
 
 ### 7. Start Frontend
 ```bash
@@ -167,11 +211,16 @@ AgriFi/
 │   │   └── lender-dashboard.js  # Lender portfolio
 │   ├── components/
 │   │   └── Navbar.js            # Navigation bar
-│   └── styles/
-│       └── agrifi.css           # Custom styling
+│   ├── config/
+│   │   └── contracts.js         # Centralized contract addresses
+│   ├── styles/
+│   │   └── agrifi.css           # Custom styling
+│   └── .env.local               # Environment variables (create this)
 ├── hardhat.config.js
 ├── package.json
-└── README.md
+├── README.md
+├── SETUP_GUIDE.md               # Advanced setup (The Graph, Upgrades)
+└── VERCEL_DEPLOYMENT.md         # Production deployment guide
 ```
 
 ## 🔐 Smart Contract Features
@@ -189,6 +238,31 @@ AgriFi/
 - Exact amount matching required
 - Reentrancy protection
 - Access control for admin functions
+
+## ⚙️ Configuration
+
+### Contract Address Management
+The project uses a centralized configuration system in `frontend/config/contracts.js`:
+
+```javascript
+const contracts = {
+  loanContract: process.env.NEXT_PUBLIC_LOAN_CONTRACT_ADDRESS || "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+  creditNFTContract: process.env.NEXT_PUBLIC_CREDIT_NFT_CONTRACT_ADDRESS || "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+};
+```
+
+**Benefits:**
+- Single source of truth for contract addresses
+- Environment variable support for different deployments
+- Fallback addresses for local development
+- Easy to update across all pages
+
+### Environment Variables
+Create `frontend/.env.local` for environment-specific configuration:
+```env
+NEXT_PUBLIC_LOAN_CONTRACT_ADDRESS=0xYourLoanContractAddress
+NEXT_PUBLIC_CREDIT_NFT_CONTRACT_ADDRESS=0xYourNFTContractAddress
+```
 
 ## 🌐 Network Configuration
 
@@ -211,21 +285,70 @@ npx hardhat test
 npx hardhat test test/AgriFiLoan.test.js
 ```
 
+## 🌐 Production Deployment
+
+### Deploy to Vercel
+For detailed Vercel deployment instructions, see [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md).
+
+**Quick Deploy:**
+1. Push your code to GitHub
+2. Import project on [Vercel](https://vercel.com)
+3. Set root directory to `frontend`
+4. Add environment variables:
+   - `NEXT_PUBLIC_LOAN_CONTRACT_ADDRESS`
+   - `NEXT_PUBLIC_CREDIT_NFT_CONTRACT_ADDRESS`
+5. Deploy!
+
+### Deploy Smart Contracts to Monad Testnet
+```bash
+npx hardhat run scripts/deploy.js --network monad
+```
+Update the contract addresses in your frontend environment variables.
+
 ## 🐛 Troubleshooting
+
+### Port Already in Use (Hardhat Node)
+```powershell
+# Windows PowerShell
+Get-NetTCPConnection -LocalPort 8545 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+```
+```bash
+# Linux/Mac
+lsof -ti:8545 | xargs kill -9
+```
 
 ### "Cannot read properties of undefined (reading 'slice')"
 - Ensure wallet is connected before fetching loans
-- Check that contract addresses are correct
+- Check that contract addresses are correct in `config/contracts.js` or `.env.local`
+- Verify MetaMask is on the correct network
 
 ### MetaMask Connection Issues
-- Clear MetaMask cache
-- Ensure correct network is selected
+- Clear MetaMask cache and reconnect
+- Ensure correct network is selected (Chain ID: 31337 for localhost)
 - Check that Hardhat node is running
+- Reset account in MetaMask (Settings → Advanced → Reset Account)
 
 ### Contract Interaction Errors
-- Verify contract addresses are updated in frontend
+- Verify contract addresses are updated in `frontend/config/contracts.js`
 - Ensure sufficient ETH balance in wallet
 - Check network and Chain ID match
+- Redeploy contracts if you restarted Hardhat node
+
+### Frontend Build Issues
+- Delete `.next` folder and `node_modules`, then reinstall:
+  ```bash
+  cd frontend
+  rm -rf .next node_modules
+  npm install
+  npm run dev
+  ```
+
+## 🔬 Advanced Features
+
+For advanced setup and features, see [SETUP_GUIDE.md](SETUP_GUIDE.md):
+- **The Graph Integration**: Event indexing for efficient data queries
+- **Upgradeable Contracts**: Using OpenZeppelin UUPS proxy pattern
+- **ABI Version Control**: Managing contract interface versions
 
 ## 🤝 Contributing
 
@@ -248,6 +371,15 @@ This project is licensed under the MIT License.
 
 - **GitHub**: [AgriFi Repository](https://github.com/BhavyaSoni21/DB-Copper_Monad-Blitz-Project_AgriFi)
 - **Monad Docs**: [Monad Developer Documentation](https://docs.monad.xyz)
+- **Setup Guide**: [SETUP_GUIDE.md](SETUP_GUIDE.md) - Advanced features
+- **Deployment Guide**: [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) - Production deployment
+
+## 📚 Documentation
+
+- **[README.md](README.md)**: Main documentation (this file)
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)**: Advanced setup (The Graph, Upgradeable Contracts, ABI versioning)
+- **[VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)**: Production deployment on Vercel
+- **[ABI_VERSION_CONTROL.md](ABI_VERSION_CONTROL.md)**: ABI management and versioning
 
 ## 🙏 Acknowledgments
 
@@ -265,21 +397,46 @@ Built with ❤️ for farmers and lenders worldwide 🌾
 - Monad’s ultra-fast block times and low gas fees make micro-lending scalable and affordable.
 - No backend, no database—just pure smart contracts and events.
 
-## Innovation Ideas
+## 💡 Key Innovations
 
-- Crop insurance NFT for repaid loans
-- Oracle integration for crop price data
-- Gamified credit score badges
-- Group loans for farming cooperatives
+### Financial Inclusion
+- **Instant Micro-Loans**: Enable farmers to access capital without traditional banking barriers
+- **Transparent Process**: All transactions visible on-chain for accountability
+- **Credit History**: Build verifiable on-chain credit through successful repayments
+- **Harvest-Aligned Repayments**: Loan terms designed around agricultural cycles
 
-## Steps to prepare your project repo:
+### Technical Excellence
+- **No Backend Required**: Pure smart contract architecture using events for data
+- **Centralized Configuration**: Single source of truth for contract addresses
+- **Environment-Based Deployment**: Easy migration between local, testnet, and mainnet
+- **Monad-Optimized**: Leverages Monad's ultra-fast block times and low gas fees for scalable micro-lending
 
-1. Visit the `monad-blitz-mumbai` repo (link [here](https://github.com/monad-developers/monad-blitz-mumbai)) and fork it.
+### User Experience
+- **Three-Stage Lender Workflow**: Clear approval → funding → tracking process  
+- **Real-Time Status Updates**: Track loan lifecycle from request to repayment
+- **Credit NFT Rewards**: Gamified credit building with NFT minting on successful repayments
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-![1.png](/screenshots/1.png)
+## 🎯 Future Roadmap
 
-2. Give it your project name, a one-liner description, make sure you are forking `main` branch and click `Create Fork`
+- **Crop Insurance NFTs**: Protection for farmers based on loan repayment history
+- **Oracle Integration**: Real-time crop price data for dynamic loan amounts
+- **Credit Score Badges**: Tiered credit system with visual badges and benefits
+- **Cooperative Loans**: Group lending for farming cooperatives
+- **Multi-Chain Support**: Deploy to additional EVM-compatible chains
+- **Advanced Analytics**: Dashboard with historical data and trends
 
-![2.png](/screenshots/2.png)
+---
 
-3. In your fork you can make all the changes you want, add code of your project, create branches, add information to `README.md` , you can change anything and everything.
+## 📞 Contact & Support
+
+**Team DB-Copper** - Monad Blitz Hackathon Project
+
+For questions, issues, or contributions:
+- Create an issue on [GitHub](https://github.com/BhavyaSoni21/DB-Copper_Monad-Blitz-Project_AgriFi/issues)
+- Check existing documentation in SETUP_GUIDE.md and VERCEL_DEPLOYMENT.md
+- Review the comprehensive guides above for troubleshooting
+
+---
+
+*Making agricultural finance accessible, transparent, and efficient through blockchain technology.*
